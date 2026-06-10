@@ -1,4 +1,4 @@
-"""
+"""#276
 domain_prompts.py — Domain Detection & Specialized System Prompts
 
 KEY IMPROVEMENT over original:
@@ -60,6 +60,7 @@ Start your code directly with `df` operations.
 
 WRONG (never do this):
   df = pd.read_csv('data.csv')
+  df = pd.DataFrame(data)
 
 CORRECT (always do this):
   result = df.groupby(...)
@@ -92,6 +93,7 @@ Start your code directly with `df` operations.
 
 WRONG (never do this):
   df = pd.read_csv('data.csv')
+  df = pd.DataFrame(data)
 
 CORRECT (always do this):
   result = df.groupby(...)
@@ -124,6 +126,7 @@ Start your code directly with `df` operations.
 
 WRONG (never do this):
   df = pd.read_csv('data.csv')
+  df = pd.DataFrame(data)
 
 CORRECT (always do this):
   result = df.groupby(...)
@@ -159,6 +162,7 @@ Start your code directly with `df` operations.
 
 WRONG (never do this):
   df = pd.read_csv('data.csv')
+  df = pd.DataFrame(data)
 
 CORRECT (always do this):
   result = df.groupby(...)

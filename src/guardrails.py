@@ -1,4 +1,4 @@
-"""
+"""#216
 guardrails.py — Input & Output Validation
 
 KEY IMPROVEMENTS over original:
@@ -17,6 +17,7 @@ KEY IMPROVEMENTS over original:
 """
 
 import re
+import bleach
 import logging
 from io import BytesIO
 from pathlib import Path
@@ -31,7 +32,7 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 
 MAX_CSV_SIZE_MB = 50
-MAX_CSV_ROWS = 500_000
+# MAX_CSV_ROWS = 500_000
 ALLOWED_EXTENSIONS = {".csv"}
 
 # Patterns that suggest someone is trying to manipulate the LLM
@@ -42,6 +43,9 @@ INJECTION_PATTERNS = [
     r"forget everything",
     r"disregard your",
     r"act as (a|an) ",
+    r"pretend you are",
+    r"your new instructions",
+    r"override your",
 ]
 
 # Patterns that signal dangerous code.
@@ -62,7 +66,7 @@ DANGEROUS_CODE_PATTERNS = [
     r"\burllib\b",
     r"\bsocket\b",
     r"\bsys\.exit\b",
-    r"\bexit\s*\(",
+    r"^exit\s*\(\s*\)",
     r"\bquit\s*\(",
 ]
 
@@ -134,7 +138,14 @@ async def validate_csv_upload(file: UploadFile) -> bytes:
             status_code=400,
             detail=f"Could not parse CSV file: {str(e)}",
         )
-
+        
+    # full_df = pd.read_csv(BytesIO(content))
+    # if len(full_df) > MAX_CSV_ROWS:
+    #     raise HTTPException(
+    #         status_code=400,
+    #         detail=f"File has too many rows ({len(full_df):,}). Maximum is {MAX_CSV_ROWS:,}.",
+    #     )
+        
     if df.empty or len(df.columns) == 0:
         raise HTTPException(
             status_code=400,
@@ -189,17 +200,42 @@ def check_execution_output(output: str) -> bool:
     )
 
 
+# def sanitize_report_output(report: str) -> str:
+#     """
+#     Clean the final markdown report before sending it to the user.
+#     Removes accidental HTML script/iframe tags (basic XSS prevention).
+#     """
+#     report = re.sub(
+#         r"<script.*?>.*?</script>", "", report,
+#         flags=re.DOTALL | re.IGNORECASE,
+#     )
+#     report = re.sub(
+#         r"<iframe.*?>.*?</iframe>", "", report,
+#         flags=re.DOTALL | re.IGNORECASE,
+#     )
+#     return report.strip()
+
+
 def sanitize_report_output(report: str) -> str:
     """
     Clean the final markdown report before sending it to the user.
-    Removes accidental HTML script/iframe tags (basic XSS prevention).
+    Uses an allow-list approach to prevent XSS attacks.
     """
-    report = re.sub(
-        r"<script.*?>.*?</script>", "", report,
-        flags=re.DOTALL | re.IGNORECASE,
+    allowed_tags = [
+        'b', 'i', 'u', 'em', 'strong', 'p', 'br',
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'ul', 'ol', 'li', 'code', 'pre', 'a'
+    ]
+    
+    allowed_attributes = {
+        'a': ['href', 'title', 'target'],
+    }
+    
+    clean_report = bleach.clean(
+        report, 
+        tags=allowed_tags, 
+        attributes=allowed_attributes,
+        strip=True 
     )
-    report = re.sub(
-        r"<iframe.*?>.*?</iframe>", "", report,
-        flags=re.DOTALL | re.IGNORECASE,
-    )
-    return report.strip()
+    
+    return clean_report.strip()
