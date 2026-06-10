@@ -12,6 +12,7 @@ groq
 
 # Data & visualization
 pandas
+bleach
 matplotlib
 seaborn
 tabulate    # for df.to_markdown()

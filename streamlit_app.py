@@ -1,4 +1,4 @@
-"""
+"""#642
 streamlit_app.py — AutoAnalyst Frontend
 ========================================
 A Streamlit UI that talks to the AutoAnalyst FastAPI backend.
