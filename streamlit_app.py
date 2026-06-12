@@ -20,7 +20,7 @@ import streamlit as st
 # Configuration
 # ─────────────────────────────────────────────
 
-API_BASE_URL = "test-autoanalyst-8glf0lodh-aseel-ai623.vercel.app"
+API_BASE_URL = ""
 API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 # ─────────────────────────────────────────────
